@@ -72,4 +72,43 @@ $browser['version'] = '8';
 $browser['share'] = '13.14';
 $browser_share_list[] = $browser;
 
+// loop
+// 1から10までの和を計算し画面に出力
+$calc_result = 0;
+
+for ($i=1; $i<=10; $i++) {
+
+      $calc_resutl = $calc_result + $i;
+}
+
+echo $calc_result;
+
+// while
+$calc_result = 0;
+$i = 1;
+while($i<=10) {
+
+      $calc_result = $calc_result + 1;
+}
+
+echo $calc_result;
+
+while (true) {
+
+  // ある条件判定がなされるまでは無限ループ
+  break;    // breakでループから抜ける
+
+}
+
+// foreach
+/*
+foreach (配列名 as 任意の変数名) {
+
+}
+*/
+foreach ($syain_list as $syian) {
+
+      echo $syain;    //
+}
+
 ?>
