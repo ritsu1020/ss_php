@@ -108,7 +108,7 @@ foreach (配列名 as 任意の変数名) {
 */
 foreach ($syain_list as $syian) {
 
-      echo $syain;    //
+      echo $syain['name'];    // 上記の例ではsyain_a~cまでのデータが$syain_listに格納される
 }
 
 ?>
