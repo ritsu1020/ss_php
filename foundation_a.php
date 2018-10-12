@@ -111,4 +111,139 @@ foreach ($syain_list as $syian) {
       echo $syain['name'];    // 上記の例ではsyain_a~cまでのデータが$syain_listに格納される
 }
 
+// fucntion ユーザ-定義関数
+// 商品の割引価格を計算する
+function calc_sale_price ($price_in_tax) {
+
+      if ($price_in_tax >= 1050) {
+
+        // 税込み価格が1,050円以上なら5%割引
+        $price_in_tax = $price_in_tax - ($price_in_tax * 0.05);
+
+      } else if ($price_in_tax >= 1000) {
+
+        // 税込み価格が1,000円以上なら2%割引
+        $price_in_tax = $price_in_tax - ($price_in_tax * 0.02);
+
+      }
+
+      return $price_in_tax;
+}
+
+// 商品Aの価格
+$price_a = 920;
+
+// 商品のAの税込み価格(例：税率10%)
+$price_in_tax_a = $price_a * 1.1;
+
+$price_in_tax_a = calc_sale_price($price_in_tax_a);
+
+// 商品Bの価格
+$price_b = 940;
+
+// 商品Bの税込み価格
+$price_in_tax_b = $price_b * 1.1;
+
+$price_in_tax_b = calc_sale_price($price_in_tax_b);
+
+// 商品Cの価格
+$price_c = 960;
+
+// 商品Cの税込み価格
+$price_in_tax_c = $price_c * 1.1;
+
+$price_in_tax_c = calc_sale_price($price_in_tax_c);
+
+echo "商品Aの価格：".$price_in_tax_a."円<br />";
+echo "商品Bの価格：".$price_in_tax_b."円<br />";
+echo "商品Cの価格：".$price_in_tax_c."円<br />";
+
+
+
+?>
+<?php
+
+// カレンダーを作成
+$last_day = date('t');    // 今月の最終日を求める
+
+// 1日の曜日を求める
+$firstday_of_the_week = date('w', strtotime(date('Y/m/1')));
+
+?>
+<table border="1">
+      <tr>
+            <td>日</td>
+            <td>月</td>
+            <td>火</td>
+            <td>水</td>
+            <td>木</td>
+            <td>金</td>
+            <td>土</td>
+      </tr>
+
+      <tr>
+
+        <?php
+
+            $youbi = 0;
+
+            for ($i=0; $i < $firstday_of_the_week; $i++) {
+
+                  // 1日の曜日が来るまではスペースで埋める
+                  echo '<td>&nbsp</td>';
+
+            }
+        ?>
+        <?php
+            // 今月の最終日まで連続した日付を取得
+            for ($day=1; $day<=$last_day; $day++) {
+
+            // 曜日が土曜日だったら折り返しタグを挿入
+                  if (date('w', strtotime(date("Y/m/$day"))) == 6) {
+
+                        echo '</tr><tr>';
+                  }
+            }
+        ?>
+      </tr>
+
+    </table>
+
+<?php
+
+// 例外処理
+    try {
+
+          echo (val());    // 定義していない関数を使っている
+
+          echo ('END');    // 例外が発生しcatchに移動するのでここは実行されない
+
+    } catch (Exception $e) {
+
+          // ここにエラーが発生した場合の処理を記述
+          echo 'キャッチしたエラー：'.$e->getMessage();
+
+    }
+
+    // 任意のタイミングでエラーを発生させる
+    try {
+
+          $i = 0;
+
+          if ($i === 0) {
+
+           // ここからcatchにスローする
+            throw new Exception('$iに0が設定されました');
+
+          }
+
+            echo 'END';    // 例外が発生するとここは実行されない
+
+          } catch (Exception $e) {
+
+                // 例外がスローされたらここでcatch
+                echo 'キャッチしたエラー：'.$e->getMessage();
+                
+          }
+
 ?>
