@@ -2,6 +2,7 @@
 
 // signup
 require_once 'config.php';
+require_once 'functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 
@@ -16,14 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
       $user_password = $_POST['user_password'];
 
       // DB接続(PDO)
-      $host = "localhost";
-      $user = "root";
-      $pass = "password";
-      $db = "test_db";
-      $param = "mysql:dbname=".$db.";host=".$host;
-
-      $pdo = new PDO($param, $user, $pass);
-      $pdo->query('SET NAMES utf8;');
+      $pdo = connectDb();
 
       // 入力チェック
       $err = array();
@@ -77,9 +71,15 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $params = array(':user_name'=>$user_name, ':user_password'=>$user_password, ':user_email'=>$user_email);
             $stmt->execute($params);
 
+            // auto login user_email & user_password varification
+            $user = getUser($user_email, $user_password, $pdo);
+
+            // user data save session;
+            $_SESSION['USER'] = $user;
+
             unset($pdo);
 
-            // signup_complete.phpへ画面遷移
+            // signup_complete.php
             header('Location:'.SITE_URL.'signup_complete.php');
             exit;
       }
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 <html lang="ja">
 <head>
     <meta charset="utf-8">
-    <title>新規ユーザー登録 | <?php echo SERVICE_NAME; ?></title>
+    <title>add user | <?php echo SERVICE_NAME; ?></title>
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <link href="css/bootstrap.min.css" rel="stylesheet">
