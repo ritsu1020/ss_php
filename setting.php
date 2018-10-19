@@ -1,9 +1,9 @@
 <?php
 
-// item_list.php
+// setting.php
 
 require_once 'config.php';
-require_once 'functions.php';
+require_once 'fucntions.php';
 
 session_start();
 
@@ -11,32 +11,54 @@ if (!isset($_SESSION['USER'])) {
 
       header('Location:'.SITE_URL.'login.php');
       exit;
+
 }
 
 $user = $_SESSION['USER'];
 
-$pdo = connectDb();
+if ($_SERVER['REQUEST_MEHOD'] != 'POST') {
 
-$items = array();
+} else {
 
-$sql = 'SELECT * FROM items WHERE user_id = :user_id ORDER BY created_at DESC';
-$stmt = $pdo->prepare($sql);
-$stmt->bindValue(':user_id', $user['id'], PDO::PARAM_INT);
-$stmt->execute();
+      $delivery_hour = $_POST['delivery_hour'];
 
-foeach ($stmt->fetchAll() as $row) {
+      $pdo = connectDb();
 
-      array_push($items, $row);
+      // input check;
+      $err = array();
+      $complete_msg = '';
+
+      if ($delivery_hour == '') {
+
+            $err['delivery_hour'] = '通知時刻を設定してください';
+
+      }
+
+      if (empty($err)) {
+
+            $sql = 'UPDATE user SET delivery_hour = :delivery_hour, updated_at = now() WHERE id = :id';
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':delivery_hour', $delivery_hour, PDO::PARAM_STR);
+            $stmt->bindValue(':id'=>$user['id'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            // session updated.
+            $user['delivery_hour'] = $delivery_hour;
+            $_SESSION['USER'] = $user;
+
+            $complete_msg = 'success! updated.';
+      }
+
+      unset($pdo);
 
 }
 
-unset($pdo);
-
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>HOME | <?php echo SITE_TITLE; ?></title>
+    <title>setting | <?php echo SITE_TITLE; ?></title>
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -70,23 +92,28 @@ unset($pdo);
    </div>
  </div><!-- /.navbar -->
 <div class="container">
-      <h1>item_list</h1>
-      <?php if(!$items): ?>
-        <div class="alert alert-danger">アイテムは登録されていません。</div>
-      <?php endif; ?>
-    <ul class="list-group">
-      <?php foreach ($items as $item):?>
-        <li class="list-group-item">
-          <?php echo h($item['item_text']); ?>
-          <a href="item_edit.php?id=<?php echo $item['id']; ?>">edit</a>
-          <a href="javascript:void(0);" onclick="var ok=confirm('削除してもよろしいですか？');
+      <h1>setting</h1>
+      <form method="POST" class="panel panel-default panel-body">
+        <div class="form-group <?php if ($err['delivery_hour'] != '') echo 'has-error'; ?>">
 
-          if (ok) location.href='delete.php?id=<?php echo $item['id']; ?>'; return false;">
-            delete</a>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-    <a href="./index.php">back</a>
+        <label>メール通知</label>
+
+        <?php
+
+         arrayToSelect('delivery_hour', $delivery_hour_array, $user['delivery_hour']);
+
+         ?>
+
+        <span class="help-block"><?php echo $err['delivery_hour']; ?></span>
+
+      </div>
+
+      <div class="form-group">
+
+        <input class="btn btn-success btn-block" type="submit" value="save">
+
+      </div>
+      </form>
       <hr>
       <footer class="footer">
         <p><?php echo COPYRIGHT; ?></p>

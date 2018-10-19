@@ -7,15 +7,46 @@ require_once 'funcitons.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 
-      // getからのアクセス
+      // 自動ログイン情報があるかどうかcookieをチェック
+      if (isset($_COOKIE['HOGEHOGE'])) {
+
+            // 自動ログイン情報があればキーを取得
+            $auto_login_key = $_COOKIE['HOGEHOGE'];
+
+            // 自動ログインキーをDBに照合
+            $sql = 'SELECT * FROM auto_login WHERE c_key = :c_key AND expire >= :expire limit 1';
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':c_key', $auto_login_key);
+            $stmt->bindValue(':expire', date('Y-m-d H:i:s'));
+            $stmt->execute();
+            $row = $stmt->fetch();
+
+            // 照合に成功したら自動ログイン
+            if ($row) {
+
+                  $user = getUserbyUserId($row['user_id'], $pdo);
+
+                  session_regenerate_id(true);
+                  $_SESSION['USER'] = $user;
+
+                  header('Location:'.SITE_URL.'index.php');
+                  unset($pdo);
+                  exit;
+            }
+      }
+
+      setToken();
 
 } else {
+
+      checkToken();
 
       // formからsubmitされたときの処理
 
       // POSTされた値を変数に保存
       $user_email = $_POST['user_email'];
       $user_password = $_POST['user_password'];
+      $auto_login = $_POST['auto_login'];
 
       // DB(PDO)
       $pdo = connectDb();
@@ -57,7 +88,40 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
         if (empty($err)) {
 
           // userデータをセッションに保存
+          session_regenerate_id(true);
           $_SESSION['USER'] = $user;
+
+          // 自動ログイン情報を一度クリアする
+          if (isset($_COOKIE['HOGEHOGE'])) {
+
+                $auto_login_key = $_COOKIE['HOGEHOGE'];
+                setcooke('HOGEHOGE', '', time()-86400, '/');
+
+                // DB delete
+                $sql = 'DELETE FROM auto_login WHERE c_key = :c_key';
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':c_key', $auto_login_key);
+          }
+
+          // 自動ログイン希望の場合はcookieとDBに情報を登録する
+          if ($auto_login) {
+
+                // auto_login_key
+                $auto_login_key = sha1(uniqid(mt_rand(), true));
+
+                // cookie saved
+                setcookie('HOGEHOGE', $auto_login_key, time()+3600*24*365, '/');
+
+                // DB saved
+                $sql = 'INSERT INTO auto_login (user_id, c_key, expire, created_at, updated_at)
+                Values (:user_id, :c_key, :expire, now(), now())';
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':user_id', $user['id']);
+                $stmt->bindValue(':c_key', $auto_login_key);
+                $stmt->bindValue(':expire', date('Y-m-d H:i:s', time()+3600*24*365));
+                $stmt->execute();
+
+          }
 
               header('Location:'.SITE_URL);
               unset($pdo);
@@ -94,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
         <form method="POST" class="sidebar-nav panel panel-default">
             <div class="form-group">
                 <label>email</label>
-                <input type="text" class="form-control" name="user_email" value="<?php echo $user_email; ?>" placeholder="メールアドレス" />
+                <input type="text" class="form-control" name="user_email" value="<?php echo h($user_email); ?>" placeholder="メールアドレス" />
                 <span class="help-block"></span>
             </div>
 
@@ -109,10 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             </div>
 
             <div class="form-group">
-                <input type="checkbox">次回から自動ログイン
+                <input type="checkbox" name=auto_login"">次回から自動ログイン
             </div>
 
-            <input type="hidden" name="token" value="" />
+            <input type="hidden" name="token" value="<?php echo h($_SESSION['sstoken']); ?>" />
         </form>
         <hr>
         <footer class="footer">

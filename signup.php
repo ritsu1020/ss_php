@@ -6,9 +6,11 @@ require_once 'functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 
-      // getでアクセスしたときの処理
+      setToken();
 
 } else {
+
+      checToken();
 
       // formからsubmitされたときの処理
       // POSTされた値を変数に保存
@@ -75,7 +77,19 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             $user = getUser($user_email, $user_password, $pdo);
 
             // user data save session;
+            session_regenerate_id(true);
             $_SESSION['USER'] = $user;
+
+            // sendmail to administrator
+            mb_language('japanese');
+            mb_internal_encoding('UTF-8');
+
+            $mail_title = 'signup! new member';
+            $mail_body = 'name:'.$user['user_name'].PHP_EOL;
+            $mail_body .= 'email:'.$user['user_email'];
+
+            // mb_send_mail(to, title, body, header);
+            mb_send_mail(ADDMIN_MAIL_ADDRESS, $mail_title, $mail_body);
 
             unset($pdo);
 
@@ -132,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
                 <input type="submit" class="btn btn-success btn-block" value="アカウントを作成する">
             </div>
 
-            <input type="hidden" name="token" value="" />
+            <input type="hidden" name="token" value="<?php echo h($_SESSION['sstoken']); ?>">
         </form>
         <hr>
         <footer class="footer">

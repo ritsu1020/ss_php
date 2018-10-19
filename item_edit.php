@@ -28,7 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
       $item = $stmt->fetch();
       $item_text = $item['item_text'];
 
+      setToken();
+
 } else {
+
+      checkToken();
 
       $item_text = $_POST['item'];
       // input check;
@@ -107,11 +111,11 @@ unset($pdo);
       <form method="POST" class="panel panel-default panel-body">
           <div class="form-group <?php if($err['item_text'] != '') echo 'has-error'; ?>">
           <label>add birthday</label>
-          <input class="form-control" type="text" name="item" value="<?php echo $item_text; ?>" />
+          <input class="form-control" type="text" name="item" value="<?php echo h($item_text); ?>" />
           <span class="help-block"><?php echo $err['item_text']; ?></span>
           </div>
           <div class="form-group">
-          <input type="hidden" name="token" value="">
+          <input type="hidden" name="token" value="<?php echo h($_SESSION['sstoken']); ?>">
           <input class="btn btn-success btn-block" type="submit" value="edit">
           </div>
       </form>

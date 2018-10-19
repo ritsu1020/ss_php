@@ -18,8 +18,11 @@ $user = $_SESSION['USER'];
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 
+      setToken();
 
 } else {
+
+      checkToken();
 
       // DB(PDO)
       $pdo = connectDb();
@@ -100,13 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
       <form method="POST" class="panel panel-default panel-body">
           <div class="form-group <?php if ($err['item'] != '') echo 'has-error'; ?>">
           <label>add birthday</label>
-          <input class="form-control" type="text" name="item" value=""  placeholder="add birthday" />
+          <input class="form-control" type="text" name="item" value="<?php echo h($item); ?>"  placeholder="add birthday" />
           <span class="help-block"><?php echo $err['item']; ?></span>
           </div>
           <div class="form-group">
-          <input type="hidden" name="token" value="">
           <input class="btn btn-success btn-block" type="submit" value="add">
           </div>
+          <input type="hidden" name="token" value="<?php echo h($_SESSION['sstoken']); ?>">
       </form>
       <hr>
       <footer class="footer">
