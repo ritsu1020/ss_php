@@ -2,7 +2,7 @@
 
 // fucntions.php
 // DB接続(PDO)
-fucnttion connectDb() {
+function connectDb() {
 
       $host = "localhost";
       $user = "root";
